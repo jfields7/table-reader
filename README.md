@@ -1,3 +1,5 @@
+[![Test Status](https://github.com/jfields7/table-reader/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/jfields7/table-reader/actions/workflows/c-cpp.yml)
+
 # TableReader
 A simple table reader to be implemented into AthenaK.
 
