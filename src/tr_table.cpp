@@ -10,7 +10,7 @@
 
 using namespace TableReader;
 
-Table::Table() : ndim(0), initialized(false) {
+Table::Table() : ndim(0), npoints(0), initialized(false) {
 }
 
 Table::~Table() {
@@ -73,7 +73,6 @@ ReadResult Table::ReadTable(const std::string fname) {
   result = ParseBlock("scalars", block_lines,
   [&](const std::string& k, const std::string& v) {
     scalars[k] = std::stod(v);
-    return std::stod(v);
   });
   if (result.error != ReadResult::SUCCESS) {
     file.close();
@@ -96,8 +95,44 @@ ReadResult Table::ReadTable(const std::string fname) {
     return result;
   }
   block_lines.clear();
+  ndim = point_info.size();
 
-  //size_t header_size = file.tellg();
+  // Read in the fields
+  result = ExtractBlock(file, "fields", block_lines);
+  if (result.error != ReadResult::SUCCESS) {
+    file.close();
+    return result;
+  }
+  for (auto line : block_lines) {
+    TrimWhiteSpace(line);
+    field_names.push_back(line);
+  }
+
+  size_t header_size = file.tellg();
+  file.close();
+
+  // Allocate memory for the fields.
+  npoints = 1;
+  int size = 0;
+  for (auto& p : point_info) {
+    npoints *= p.second;
+    size += p.second;
+  }
+  size += npoints*field_names.size();
+  data = new double[size];
+
+  // Set the memory offsets for all the fields.
+  int offset = 0;
+  for (auto &p : point_info) {
+    fields[p.first] = &data[offset];
+    offset += p.second;
+  }
+  for (auto &s : field_names) {
+    fields[s] = &data[offset];
+    offset += npoints;
+  }
+
+  initialized = true;
 
   result.error = ReadResult::SUCCESS;
 

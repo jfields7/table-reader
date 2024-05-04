@@ -45,6 +45,14 @@ class Table {
     return ndim;
   }
 
+  inline int GetNPoints() {
+    return npoints;
+  }
+
+  inline const std::vector<std::string>& GetFieldNames() {
+    return field_names;
+  }
+
   inline double * operator[](std::string& field) {
     return fields[field];
   }
@@ -84,10 +92,12 @@ class Table {
 
   std::map<std::string, std::string> metadata;
   std::vector<std::pair<std::string, int>> point_info;
+  std::vector<std::string> field_names;
   std::map<std::string, double> scalars;
   std::map<std::string, double*> fields;
   double * data;
   int ndim;
+  int npoints;
   bool initialized;
 };
 

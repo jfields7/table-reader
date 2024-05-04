@@ -123,6 +123,34 @@ bool TestPoints() {
   return true;
 }
 
+bool TestFields() {
+  Table table;
+  auto result = table.ReadTable("../data/SFHo_T0.1_beta.athtab");
+  if (result.error != ReadResult::SUCCESS) {
+    std::cout << "Could not complete test because of loading failure.\n";
+    return false;
+  }
+  auto &field_names = table.GetFieldNames();
+  if (field_names.size() > 3) {
+    std::cout << "Header contains too many fields!\n";
+    return false;
+  }
+  if (field_names[0].compare("Q1") != 0) {
+    std::cout << "Did not properly load 'Q1'!\n";
+    return false;
+  }
+  if (field_names[1].compare("Q7") != 0) {
+    std::cout << "Did not properly load 'Q7'!\n";
+    return false;
+  }
+  if (field_names[2].compare("cs2") != 0) {
+    std::cout << "Did not properly load 'cs2'!\n";
+    return false;
+  }
+
+  return true;
+}
+
 int main(int argc, char *argv[]) {
   UnitTests tester{"Header"};
 
@@ -132,6 +160,7 @@ int main(int argc, char *argv[]) {
   tester.RunTest(&TestMetadata, "Metadata Test");
   tester.RunTest(&TestScalars, "Scalar Test");
   tester.RunTest(&TestPoints, "Points Test");
+  tester.RunTest(&TestFields, "Fields Test");
 
   tester.PrintSummary();
 
