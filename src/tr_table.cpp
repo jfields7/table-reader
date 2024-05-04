@@ -10,7 +10,7 @@
 
 using namespace TableReader;
 
-Table::Table() : ndim(0), npoints(0), initialized(false) {
+Table::Table() : ndim(0), npoints(0), mem_size(0), initialized(false) {
 }
 
 Table::~Table() {
@@ -113,13 +113,13 @@ ReadResult Table::ReadTable(const std::string fname) {
 
   // Allocate memory for the fields.
   npoints = 1;
-  int size = 0;
+  mem_size = 0;
   for (auto& p : point_info) {
     npoints *= p.second;
-    size += p.second;
+    mem_size += p.second;
   }
-  size += npoints*field_names.size();
-  data = new double[size];
+  mem_size += npoints*field_names.size();
+  data = new double[mem_size];
 
   // Set the memory offsets for all the fields.
   int offset = 0;

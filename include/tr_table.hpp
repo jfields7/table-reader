@@ -49,16 +49,24 @@ class Table {
     return npoints;
   }
 
+  inline int GetMemSize() {
+    return mem_size;
+  }
+
   inline const std::vector<std::string>& GetFieldNames() {
     return field_names;
   }
 
-  inline double * operator[](std::string& field) {
+  inline double * operator[](const std::string& field) {
     return fields[field];
   }
 
   inline bool IsInitialize() {
     return initialized;
+  }
+
+  inline const double * GetRawData() {
+    return data;
   }
 
  private:
@@ -98,6 +106,7 @@ class Table {
   double * data;
   int ndim;
   int npoints;
+  int mem_size;
   bool initialized;
 };
 

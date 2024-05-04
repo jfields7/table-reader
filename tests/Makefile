@@ -32,8 +32,10 @@ $(OBJ_DIR)%.o : %.cpp
 
 header : $(OBJ_FILES)
 	$(call make_test,header,test_header)
+table : $(OBJ_FILES)
+	$(call make_test,table,test_table)
 
-tests: dirs header
+tests: dirs header table
 
 clean:
 	rm -rf $(OBJ_DIR)*
@@ -41,4 +43,5 @@ clean:
 
 run: dirs tests
 	cd bin; \
-	./test_header;
+	./test_header; \
+	./test_table;
