@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <tr_table.hpp>
+#include <tr_utils.hpp>
 
 using namespace TableReader;
 
@@ -133,6 +134,45 @@ ReadResult Table::ReadTable(const std::string fname) {
   }
 
   initialized = true;
+
+  // Now we need to load the table memory itself. We reopen the file as a binary.
+  try {
+    file.open(fname.c_str(), std::ifstream::in | std::ifstream::binary);
+  } catch (std::ifstream::failure& e) {
+    result.error = ReadResult::BAD_FILENAME;
+    std::stringstream ss;
+    ss << "Could not read '" << fname << "' as a binary file\n"
+       << "open() returned the following error:\n"
+       << e.what();
+    result.message = ss.str();
+    return result;
+  }
+  if (!file.is_open()) {
+    result.error = ReadResult::BAD_FILENAME;
+    std::stringstream ss;
+    ss << "No exception occurred, but ReadTable() failed to open '" << fname << "'\n"
+       << "as a binary file\n";
+    result.message = ss.str();
+    return result;
+  }
+
+  // Because we've already read the header, we skip ahead to the binary section.
+  file.seekg(header_size);
+  // Dump all the memory into the data.
+  // FIXME(JMF): This doesn't handle single precision data correctly!
+  char *memblock = reinterpret_cast<char*>(data);
+  file.read(memblock, mem_size);
+
+  // Now we need to check for endianness.
+  if ((!metadata["endianness"].compare("little") && !IsLittleEndian()) ||
+      (!metadata["endianness"].compare("big") && IsLittleEndian())) {
+    for (int i = 0; i < mem_size; i++) {
+      data[i] = SwapEndianness(data[i]);
+    }
+    result.message = "Swapped endianness of data.\n";
+  }
+
+  file.close();
 
   result.error = ReadResult::SUCCESS;
 
