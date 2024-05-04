@@ -1,4 +1,7 @@
+include config.mk
 INCLUDE += -I./include
+INCLUDE += $(HDF5_INCLUDE)
+LDFLAGS += $(HDF5_LIBS)
 
 SRC_FILES = $(wildcard src/*.cpp)
 OBJ_DIR := obj/

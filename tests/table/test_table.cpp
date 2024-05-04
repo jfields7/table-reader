@@ -3,6 +3,9 @@
 
 #include <iostream>
 
+#include <hdf5.h>
+#include <hdf5_hl.h>
+
 #include <tr_table.hpp>
 
 #include <testing.hpp>
@@ -79,11 +82,66 @@ bool TestOffsets() {
   return true;
 }
 
+bool TestTable() {
+  // Load the .athtab table
+  Table table;
+  auto result = table.ReadTable("../data/SFHo_T0.1_beta.athtab");
+  if (result.error != ReadResult::SUCCESS) {
+    std::cout << "Could not complete test because of loading failure.\n";
+    return false;
+  }
+
+  // Load the HDF5 table
+  herr_t ierr;
+  hsize_t snb;
+  hid_t file_id = H5Fopen("../data/SFHo_T0.1_beta.h5", H5F_ACC_RDONLY, H5P_DEFAULT);
+  if (file_id < 0) {
+    std::cout << "Could not complete test because of HDF5 loading failure.\n";
+    return false;
+  }
+
+  // Get dataset sizes
+  int nn = table.GetPointInfo()[0].second;
+  ierr = H5LTget_dataset_info(file_id, "nb", &snb, NULL, NULL);
+  int nsnb = snb;
+  if (nn != nsnb) {
+    std::cout << "The table dimensions don't match!\n"
+              << "  Expected: " << nsnb << "\n"
+              << "  Actual: " << nn << "\n";
+    return false;
+  }
+
+  // Check that the points match
+  double *scratch = new double[nsnb];
+  for (auto& field : table.GetFieldNames()) {
+    double *quantity = table[field];
+    ierr = H5LTread_dataset_double(file_id, field.c_str(), scratch);
+    if (ierr < 0) {
+      std::cout << "There was an issue reading " << field << " from the HDF5 table!\n";
+      for (int i = 0; i < nn; i++) {
+        if (quantity[i] != scratch[i]) {
+          std::cout << "The tables don't match!\n"
+                    << "  Expected: " << field << "[" << i << "] = " << scratch[i] << "\n"
+                    << "  Actual: " << field << "[" << i << "] = " << quantity[i] << "\n";
+          return false;
+        }
+      }
+    }
+  }
+
+  // Cleanup
+  delete[] scratch;
+  H5Fclose(file_id);
+
+  return true;
+}
+
 int main(int argc, char *argv[]) {
   UnitTests tester{"Table"};
 
   tester.RunTest(&TestSize, "Size Test");
   tester.RunTest(&TestOffsets, "Offset Test");
+  tester.RunTest(&TestTable, "Table Validation");
 
   tester.PrintSummary();
 
