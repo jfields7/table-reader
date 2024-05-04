@@ -123,7 +123,7 @@ ReadResult Table::ReadTable(const std::string fname) {
   data = new double[mem_size];
 
   // Set the memory offsets for all the fields.
-  int offset = 0;
+  size_t offset = 0;
   for (auto &p : point_info) {
     fields[p.first] = &data[offset];
     offset += p.second;
@@ -166,7 +166,7 @@ ReadResult Table::ReadTable(const std::string fname) {
   // Now we need to check for endianness.
   if ((!metadata["endianness"].compare("little") && !IsLittleEndian()) ||
       (!metadata["endianness"].compare("big") && IsLittleEndian())) {
-    for (int i = 0; i < mem_size; i++) {
+    for (size_t i = 0; i < mem_size; i++) {
       data[i] = SwapEndianness(data[i]);
     }
     result.message = "Swapped endianness of data.\n";

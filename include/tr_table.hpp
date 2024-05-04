@@ -33,7 +33,7 @@ class Table {
     return metadata;
   }
 
-  inline const std::vector<std::pair<std::string, int>>& GetPointInfo() {
+  inline const std::vector<std::pair<std::string, size_t>>& GetPointInfo() {
     return point_info;
   }
 
@@ -41,15 +41,15 @@ class Table {
     return scalars;
   }
 
-  inline int GetNDimensions() {
+  inline size_t GetNDimensions() {
     return ndim;
   }
 
-  inline int GetNPoints() {
+  inline size_t GetNPoints() {
     return npoints;
   }
 
-  inline int GetMemSize() {
+  inline size_t GetMemSize() {
     return mem_size;
   }
 
@@ -99,14 +99,14 @@ class Table {
   void TrimWhiteSpace(std::string& str);
 
   std::map<std::string, std::string> metadata;
-  std::vector<std::pair<std::string, int>> point_info;
+  std::vector<std::pair<std::string, size_t>> point_info;
   std::vector<std::string> field_names;
   std::map<std::string, double> scalars;
   std::map<std::string, double*> fields;
   double * data;
-  int ndim;
-  int npoints;
-  int mem_size;
+  size_t ndim;
+  size_t npoints;
+  size_t mem_size;
   bool initialized;
 };
 

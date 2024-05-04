@@ -20,22 +20,22 @@ bool TestSize() {
     return false;
   }
   auto& point_info = table.GetPointInfo();
-  int npoints_calc = 1;
-  int size_calc = 0;
+  size_t npoints_calc = 1;
+  size_t size_calc = 0;
   for (auto& p : point_info) {
     npoints_calc *= p.second;
     size_calc += p.second;
   }
-  int npoints = table.GetNPoints();
+  size_t npoints = table.GetNPoints();
   if (npoints != npoints_calc) {
     std::cout << "Number of points and calculated dimensions disagree!\n"
               << "  Calculated: " << npoints_calc << "\n"
               << "  Reported: " << npoints << "\n";
     return false;
   }
-  int nfields = table.GetFieldNames().size();
+  size_t nfields = table.GetFieldNames().size();
   size_calc += nfields*npoints_calc;
-  int size = table.GetMemSize();
+  size_t size = table.GetMemSize();
   if (size != size_calc) {
     std::cout << "Size of allocated memory does not calculated requirements.\n"
               << "  Calculated size: " << size_calc << "\n"
@@ -53,7 +53,7 @@ bool TestOffsets() {
     std::cout << "Could not complete test because of loading failure.\n";
     return false;
   }
-  int offset = 0;
+  size_t offset = 0;
   auto& point_info = table.GetPointInfo();
   auto& field_names = table.GetFieldNames();
   const double* data = table.GetRawData();
@@ -64,8 +64,8 @@ bool TestOffsets() {
     }
     offset += p.second;
   }
-  int npoints = table.GetNPoints();
-  int size = table.GetMemSize();
+  size_t npoints = table.GetNPoints();
+  size_t size = table.GetMemSize();
   for (auto& f : field_names) {
     if (table[f] != &data[offset]) {
       std::cout << "Data field '" << f << "' has the wrong memory offset!\n";
@@ -101,9 +101,9 @@ bool TestTable() {
   }
 
   // Get dataset sizes
-  int nn = table.GetPointInfo()[0].second;
+  size_t nn = table.GetPointInfo()[0].second;
   ierr = H5LTget_dataset_info(file_id, "nb", &snb, NULL, NULL);
-  int nsnb = snb;
+  size_t nsnb = snb;
   if (nn != nsnb) {
     std::cout << "The table dimensions don't match!\n"
               << "  Expected: " << nsnb << "\n"
@@ -118,7 +118,7 @@ bool TestTable() {
     ierr = H5LTread_dataset_double(file_id, field.c_str(), scratch);
     if (ierr < 0) {
       std::cout << "There was an issue reading " << field << " from the HDF5 table!\n";
-      for (int i = 0; i < nn; i++) {
+      for (size_t i = 0; i < nn; i++) {
         if (quantity[i] != scratch[i]) {
           std::cout << "The tables don't match!\n"
                     << "  Expected: " << field << "[" << i << "] = " << scratch[i] << "\n"
