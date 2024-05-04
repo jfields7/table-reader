@@ -48,24 +48,19 @@ ReadResult Table::ReadTable(const std::string fname) {
 
   // Read in the metadata
   std::vector<std::string> block_lines;
+
   result = ExtractBlock(file, "metadata", block_lines);
   if (result.error != ReadResult::SUCCESS) {
     file.close();
     return result;
   }
-  for (auto line : block_lines) {
-    std::string key, value;
-    bool success = SplitToken(line, key, value);
-    if (!success) {
-      result.error = ReadResult::BAD_HEADER;
-      std::stringstream ss;
-      ss << "'" << line << "' is not a valid metadata line.\n";
-      result.message = ss.str();
-      return result;
-    }
-    else {
-      metadata[key] = value;
-    }
+  result = ParseBlock("metadata", block_lines,
+  [&](const std::string& k, const std::string& v) {
+    metadata[k] = v;
+  });
+  if (result.error != ReadResult::SUCCESS) {
+    file.close();
+    return result;
   }
   block_lines.clear();
 
@@ -75,19 +70,30 @@ ReadResult Table::ReadTable(const std::string fname) {
     file.close();
     return result;
   }
-  for (auto line : block_lines) {
-    std::string key, value;
-    bool success = SplitToken(line, key, value);
-    if (!success) {
-      result.error = ReadResult::BAD_HEADER;
-      std::stringstream ss;
-      ss << "'" << line << "' is not a valid scalars line.\n";
-      result.message = ss.str();
-      return result;
-    }
-    else {
-      scalars[key] = std::stod(value);
-    }
+  result = ParseBlock("scalars", block_lines,
+  [&](const std::string& k, const std::string& v) {
+    scalars[k] = std::stod(v);
+    return std::stod(v);
+  });
+  if (result.error != ReadResult::SUCCESS) {
+    file.close();
+    return result;
+  }
+  block_lines.clear();
+
+  // Read in the points
+  result = ExtractBlock(file, "points", block_lines);
+  if (result.error != ReadResult::SUCCESS) {
+    file.close();
+    return result;
+  }
+  result = ParseBlock("points", block_lines,
+  [&](const std::string& k, const std::string& v) {
+    point_info.push_back({k, std::stoi(v)});
+  });
+  if (result.error != ReadResult::SUCCESS) {
+    file.close();
+    return result;
   }
   block_lines.clear();
 

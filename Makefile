@@ -3,7 +3,7 @@
 CXX      := g++
 #CPPFLAGS += $(HDF5_INCLUDE)
 LIB      := ar cr
-RFLAGS   := -std=c++11 -O0 -g -Wall -Wpedantic
+RFLAGS   := -std=c++17 -O0 -g -Wall -Wpedantic
 FLAGS    := 
 #LDFLAGS  += $(HDF5_LIBS)
 

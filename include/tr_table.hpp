@@ -7,6 +7,8 @@
 #include <map>
 #include <vector>
 #include <fstream>
+#include <sstream>
+#include <utility>
 
 namespace TableReader {
 
@@ -31,7 +33,7 @@ class Table {
     return metadata;
   }
 
-  inline const std::map<std::string, int> GetPointInfo() {
+  inline const std::vector<std::pair<std::string, int>>& GetPointInfo() {
     return point_info;
   }
 
@@ -53,6 +55,26 @@ class Table {
 
  private:
 
+  template<typename F>
+  ReadResult ParseBlock(std::string name, std::vector<std::string>& block_lines, F add) {
+    ReadResult result;
+    for (auto line : block_lines) {
+      std::string key, value;
+      bool success = SplitToken(line, key, value);
+      if (!success) {
+        result.error = ReadResult::BAD_HEADER;
+        std::stringstream ss;
+        ss << "'" << line << "' is not a valid " << name << " line.\n";
+        result.message = ss.str();
+        return result;
+      } else {
+        add(key, value);
+      }
+    }
+    result.error = ReadResult::SUCCESS;
+    return result;
+  }
+
   ReadResult ExtractBlock(std::ifstream& file, const std::string name,
                           std::vector<std::string>& lines);
 
@@ -61,7 +83,7 @@ class Table {
   void TrimWhiteSpace(std::string& str);
 
   std::map<std::string, std::string> metadata;
-  std::map<std::string, int> point_info;
+  std::vector<std::pair<std::string, int>> point_info;
   std::map<std::string, double> scalars;
   std::map<std::string, double*> fields;
   double * data;
