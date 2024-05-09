@@ -118,13 +118,14 @@ bool TestTable() {
     ierr = H5LTread_dataset_double(file_id, field.c_str(), scratch);
     if (ierr < 0) {
       std::cout << "There was an issue reading " << field << " from the HDF5 table!\n";
-      for (size_t i = 0; i < nn; i++) {
-        if (quantity[i] != scratch[i]) {
-          std::cout << "The tables don't match!\n"
-                    << "  Expected: " << field << "[" << i << "] = " << scratch[i] << "\n"
-                    << "  Actual: " << field << "[" << i << "] = " << quantity[i] << "\n";
-          return false;
-        }
+      return false;
+    }
+    for (size_t i = 0; i < nn; i++) {
+      if (quantity[i] != scratch[i]) {
+        std::cout << "The tables don't match!\n"
+                  << "  Expected: " << field << "[" << i << "] = " << scratch[i] << "\n"
+                  << "  Actual: " << field << "[" << i << "] = " << quantity[i] << "\n";
+        return false;
       }
     }
   }
