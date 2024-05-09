@@ -136,12 +136,60 @@ bool TestTable() {
   return true;
 }
 
+bool TestBigEndian() {
+  // Load the little endian table
+  Table little;
+  auto result = little.ReadTable("../data/SFHo_T0.1_beta.athtab");
+  if (result.error != ReadResult::SUCCESS) {
+    std::cout << "Could not complete test because of loading failure.\n";
+  }
+
+  // Load the big endian table
+  Table big;
+  result = big.ReadTable("../data/SFHo_T0.1_beta.be.athtab");
+  if (result.error != ReadResult::SUCCESS) {
+    std::cout << "Could not complete test because of loading failure.\n";
+    return false;
+  }
+
+  // Get dataset sizes
+  size_t nn = big.GetPointInfo()[0].second;
+  size_t nn_l = little.GetPointInfo()[0].second;
+  if (nn != nn_l) {
+    std::cout << "The table dimensions don't match!\n"
+              << "  Expected: " << nn_l << "\n"
+              << "  Actual: " << nn << "\n";
+    return false;
+  }
+
+  // Check that the points match
+  for (auto& field : little.GetFieldNames()) {
+    if (!big.HasField(field)) {
+      std::cout << "Missing field '" << field << "'!\n";
+      return false;
+    }
+    double *q_big = big[field];
+    double *q_little = little[field];
+    for (size_t i = 0; i < nn; i++) {
+      if (q_big[i] != q_little[i]) {
+        std::cout << "The tables don't match!\n"
+                  << "  Expected: " << field << "[" << i << "] = " << q_little[i] << "\n"
+                  << "  Actual: " << field << "[" << i << "] = " << q_big[i] << "\n";
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 int main(int argc, char *argv[]) {
   UnitTests tester{"Table"};
 
   tester.RunTest(&TestSize, "Size Test");
   tester.RunTest(&TestOffsets, "Offset Test");
   tester.RunTest(&TestTable, "Table Validation");
+  tester.RunTest(&TestBigEndian, "Big Endian Test");
 
   tester.PrintSummary();
 

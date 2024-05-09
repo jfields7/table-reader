@@ -161,7 +161,7 @@ ReadResult Table::ReadTable(const std::string fname) {
   // Dump all the memory into the data.
   // FIXME(JMF): This doesn't handle single precision data correctly!
   char *memblock = reinterpret_cast<char*>(data);
-  file.read(memblock, mem_size);
+  file.read(memblock, mem_size*sizeof(double));
 
   // Now we need to check for endianness.
   if ((!metadata["endianness"].compare("little") && !IsLittleEndian()) ||

@@ -53,6 +53,10 @@ class Table {
     return mem_size;
   }
 
+  inline bool HasField(const std::string& field) {
+    return (fields.find(field) != fields.end());
+  }
+
   inline const std::vector<std::string>& GetFieldNames() {
     return field_names;
   }
