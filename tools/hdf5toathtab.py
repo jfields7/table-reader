@@ -35,12 +35,30 @@ def main(**kwargs):
 
   # Load in the thermodynamic quantities
   mn = np.array(eos['mn'][()], dtype=fptype)
+  mp = np.array(eos['mp'][()], dtype=fptype)
+
   n = np.array(eos['nb'][:], dtype=fptype)
-  Q1 = np.array(eos['Q1'][:,0,0], dtype=fptype)
-  Q7 = np.array(eos['Q7'][:,0,0], dtype=fptype)
-  cs2 = np.array(eos['cs2'][:,0,0], dtype=fptype)
+  yq = np.array(eos['yq'][:], dtype=fptype)
+  t = np.array(eos['t'][:], dtype=fptype)
+
+  exclude = ["mn", "mp", "nb", "yq", "t"]
+
+  fields = []
+  
+  for key in eos.keys():
+    if key in exclude:
+      continue
+    else:
+      fields.append([key, np.array(eos[key], dtype=fptype)])
+
+  #Q1 = np.array(eos['Q1'][:,0,0], dtype=fptype)
+  #Q7 = np.array(eos['Q7'][:,0,0], dtype=fptype)
+  #cs2 = np.array(eos['cs2'][:,0,0], dtype=fptype)
 
   nn = len(n)
+  ny = len(yq)
+  nt = len(t)
+  size = nn*ny*nt
 
   # Prepare the header
   header = f"<metadatabegin>\n" \
@@ -50,15 +68,17 @@ def main(**kwargs):
            f"<metadataend>\n" \
            f"<scalarsbegin>\n" \
            f"mn={mn}\n" \
+           f"mp={mp}\n" \
            f"<scalarsend>\n" \
            f"<pointsbegin>\n" \
-           f"nn={len(n)}\n" \
+           f"nb={len(n)}\n" \
+           f"yq={len(yq)}\n" \
+           f"t={len(t)}\n" \
            f"<pointsend>\n" \
-           f"<fieldsbegin>\n" \
-           f"Q1\n" \
-           f"Q7\n" \
-           f"cs2\n" \
-           f"<fieldsend>\n"
+           f"<fieldsbegin>\n"
+  for field in fields:
+    header = header + f"{field[0]}\n"
+  header = header + f"<fieldsend>\n"
 
   print(header)
 
@@ -70,9 +90,13 @@ def main(**kwargs):
   # Now open the file in binary and write the data
   output = open(fout, 'ab')
   output.write(struct.pack(f'{endianness}{nn}{fspec}',*n))
-  output.write(struct.pack(f'{endianness}{nn}{fspec}',*Q1))
-  output.write(struct.pack(f'{endianness}{nn}{fspec}',*Q7))
-  output.write(struct.pack(f'{endianness}{nn}{fspec}',*cs2))
+  output.write(struct.pack(f'{endianness}{ny}{fspec}',*yq))
+  output.write(struct.pack(f'{endianness}{nt}{fspec}',*t))
+  for field in fields:
+    output.write(struct.pack(f'{endianness}{size}{fspec}', *field[1].flatten()))
+  #output.write(struct.pack(f'{endianness}{nn}{fspec}',*Q1))
+  #output.write(struct.pack(f'{endianness}{nn}{fspec}',*Q7))
+  #output.write(struct.pack(f'{endianness}{nn}{fspec}',*cs2))
   output.close()
 
 
