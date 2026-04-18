@@ -5,3 +5,5 @@ obj/*
 tests/lib/*
 tests/obj/*
 tests/bin/*
+tools/*.athtab
+tools/*.athtable
