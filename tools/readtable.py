@@ -77,10 +77,10 @@ class Table:
                             print("    Found value: " + value)
                         if key in type_overrides.keys():
                             value = type_overrides[key](value)
-                            print("    Using type: " + str(type_overrides[key]))
+                            if verbose: print("    Using type: " + str(type_overrides[key]))
                         else:
                             value = typef(value)
-                            print("    Using type: " + str(typef))
+                            if verbose: print("    Using type: " + str(typef))
                         dct[key] = typef(value)
                     else:
                         if verbose: print("    Skipped line: " + line)
@@ -100,16 +100,16 @@ class Table:
             
             _type_overrides = copy.deepcopy(type_overrides)
 
-            print("Extracting metadata:")
+            if verbose: print("Extracting metadata:")
             self.metadata, self.metadata_keys = parselines_to_dict(_metadata, str,  type_overrides = _type_overrides)
 
-            print("Extracting scalars:")
+            if verbose: print("Extracting scalars:")
             self.scalars, self.scalars_keys = parselines_to_dict(_scalars, float,  type_overrides = _type_overrides)
 
-            print("Extracting points:")
+            if verbose: print("Extracting points:")
             self.points, self.points_keys = parselines_to_dict(_points, int,  type_overrides = _type_overrides)
 
-            print("Extracting fields:")
+            if verbose: print("Extracting fields:")
             self.fields = parselines_to_list(_fields)
 
             endianness = self.metadata["endianness"]
@@ -145,7 +145,7 @@ class Table:
                 if verbose: print(f"{self.data_points[key][0]:.3e} <= {key:s} <= {self.data_points[key][-1]:.3e}")
             
             self.shape = tuple(shape_fields)
-            print("Field shape is: " + str(self.shape))
+            if verbose: print("Field shape is: " + str(self.shape))
             self.data_fields = {}
             for key in self.fields:
                 arr = np.fromfile(f, dtype=dtype, count=npts_fields)
